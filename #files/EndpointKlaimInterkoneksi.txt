@@ -1,0 +1,7 @@
+end point cek polis :https://uatassist.askridasyariah.com:2811/aas/ClaimPolicyPegadaian
+
+json : {
+    "NoPol": "122010392400055",
+    "NoCert": ""
+}
+
