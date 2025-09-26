@@ -187,8 +187,8 @@ class ClaimController extends Controller
         $claim->position_id   = $position->id          ?? null;
         $claim->office_id     = $office->id           ?? null;
         $claim->occupation_id = $request->occupation   ?? null;
-        $claim->outlet_id     = 3855 ?? null;
-        $claim->created_by    = 3855 ?? null;
+        $claim->outlet_id     = session('user_data')['outlet_id'] ?? null;//3855 ?? null;
+        $claim->created_by    = session('user_data')['id'] ?? null;//3855 ?? null;
         // $claim->created_by 		= $this->get_data_user()->id ?? null;
         $claim->save();
 
