@@ -258,7 +258,7 @@
                     <tr>
                       <td class="bg-secondary font-weight-bold">JENIS PEMBIAYAAN</td>
                       <td class="border-right">
-                        <b>{{ responseToString($claim->response)->TOC }}</b>
+                        <b>{{ responseToString($claim->response)->StartDate}}</b>
                       </td>
                     </tr>
                     <tr>
@@ -286,13 +286,13 @@
                     <tr>
                       <td class="bg-secondary font-weight-bold">PLAFON PEMBIAYAAN (Rp)</td>
                       <td class="border-right">
-                        <b class="rupiah">{{ number_format($claim->tsi_amount) }}</b>
+                        <b class="rupiah">{{ number_format($claim->tsi_amount, 0, ',', '.') }}</b>
                       </td>
                     </tr>
                     <tr>
                       <td class="bg-secondary font-weight-bold">NILAI PENGAJUAN (Rp)</td>
                       <td class="border-right">
-                        <b>{{ number_format($claim->claim_amount ) }}</b>
+                        <b>{{ number_format($claim->claim_amount, 0, ',', '.') }}</b>
                       </td>
                     </tr>
                     <tr>

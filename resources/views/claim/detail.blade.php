@@ -223,7 +223,7 @@
                         <label for="tsi" class="col-sm-5 col-form-label">PLAFON PEMBIAYAAN (Rp)</label>
                         <div class="col-sm-4">
                           <input type="text" class="form-control form-control text-dark" id="tsi" name=""
-                            value="{{ number_format($claim->tsi_amount) }}" readonly>
+                            value="{{ number_format($claim->tsi_amount, 0, ',', '.') }}" readonly>
                         </div>
                       </div>
 
@@ -235,7 +235,7 @@
                           <input type="text"
                             class="form-control form-control bg-gradient-white text-dark rupiah @error('submission_amount') is-invalid @enderror"
                             id="submission_amount" name="submission_amount"
-                            value="{{ old('submission_amount') ?? $claim->claim_amount }}">
+                            value="{{ old('submission_amount') ??  number_format($claim->claim_amount, 0, ',', '.') }}">
                           @error('submission_amount')
                           <div class="invalid-feedback font-weight-bold">
                             {{ $message }}!

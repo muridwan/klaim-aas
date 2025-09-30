@@ -126,7 +126,7 @@ class ClaimController extends Controller
         // $incident_date     = Carbon::createFromFormat('d-m-Y', $request->incident_date)->format('Y-m-d');
         $validation_data  = session('validation_data');
         $office           = Office::select('id', 'code', 'category')->where('code', $validation_data->IDBranch)->first();
-        $order            = Claim::select('order')->orderByDesc('order')->withTrashed()->first()->order ?? 0;
+        $order            = Claim::select('order_no')->orderByDesc('order_no')->withTrashed()->first()->order ?? 0;
         if ($office->category == 3) {
           $branch          = Limit::with([
             'position',
@@ -182,13 +182,13 @@ class ClaimController extends Controller
         $claim->status        =  0  ?? null;
         $claim->decision      =  null;
         $claim->sequence      =  null;
-        $claim->order         = $order + 1;
+        $claim->order_no      = $order + 1;
         $claim->cause_id      = $request->cause       ?? null;
         $claim->position_id   = $position->id          ?? null;
         $claim->office_id     = $office->id           ?? null;
         $claim->occupation_id = $request->occupation   ?? null;
         $claim->outlet_id     = session('user_data')['outlet_id'] ?? null;//3855 ?? null;
-        $claim->created_by    = session('user_data')['id'] ?? null;//3855 ?? null;
+        $claim->created_by    = session('user_data')['id'] ?? 3855;//3855 ?? null;
         // $claim->created_by 		= $this->get_data_user()->id ?? null;
         $claim->save();
 
@@ -305,7 +305,7 @@ class ClaimController extends Controller
         $array   = $response->json();
         $object  = (object) $array;
 
-        $existing = Claim::select('policy')->where('policy', $request->policy)->first();
+        $existing = Claim::select('policy')->where('policy', $request->policy)->where('certificate', $request->certificate)->first();
         if ($existing) {
           return redirect()->route('claims', ['status' => 'submission'])->with('pesan_error', "Polis sudah pernah diajukan klaim sebelumnya");
         }
