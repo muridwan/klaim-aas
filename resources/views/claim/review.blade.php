@@ -258,7 +258,7 @@
                     <tr>
                       <td class="bg-secondary font-weight-bold">JENIS PEMBIAYAAN</td>
                       <td class="border-right">
-                        <b>{{ responseToString($claim->response)->StartDate}}</b>
+                        <b>{{ responseToString($claim->response)->TOC}}</b>
                       </td>
                     </tr>
                     <tr>
@@ -364,7 +364,7 @@
                         {{{ $document->description ?? '-' }}}
                       </td>
                       <td class="text-center">
-                        @if ($claim->sequence == 1)
+                        @if ($claim->sequence == 1 && (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 ))
                         <input data-row="{{ $loop->iteration }}" type="checkbox" value="1" id="file_decision-{{$loop->iteration}}" class="file_decision" @checked($document->is_accepted == 1)
                         name="file_decisions[{{$loop->iteration-1}}]">
                         @else
@@ -376,7 +376,7 @@
                         @endif
                       </td>
                       <td>
-                        @if ($claim->sequence == 1)
+                        @if ($claim->sequence == 1 && (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 ))
                         <textarea data-row="{{ $loop->iteration }}" name="remarks[{{ $loop->iteration-1 }}]" class="form-control file_remarks" id="file-remarks-{{$loop->iteration}}"
                           rows="2">{{{ $document->remarks ?? '' }}}</textarea>
                         @else
@@ -411,8 +411,13 @@
                         <i class="fas fa-caret-right"></i> CATATAN <u>{{
                           strtoupper($item->position->name) }}</u> :
                       </label>
-                      <textarea class="form-control" id="recom_note{{ $item->sequence }}" name="recom_note" rows="3" required
+                      @if ( session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 )
+                        <textarea class="form-control" id="recom_note{{ $item->sequence }}" name="recom_note" rows="3" required
                         @readonly($item->sequence != $claim->sequence)>{{ $item->description ?? '' }}</textarea>
+                      @else
+                        <textarea disabled="true" class="form-control" id="recom_note{{ $item->sequence }}" name="recom_note" rows="3" required
+                        @readonly($item->sequence != $claim->sequence)>{{ $item->description ?? '' }}</textarea>    
+                      @endif
                       @if ( $item->created_at AND $item->created_by )
                       <small>
                         <span>
@@ -422,9 +427,9 @@
                       </small>
                       @endif
                     </div>
-                    @if ($item->is_decider == 0)
+                    @if ($item->is_decider == 0  && (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 ))
                     <div class="form-group form-check" id="all_done_block" style="display: {{ $isChecedkAll ? 'show' : 'none' }}">
-                      <input type="checkbox" class="form-check-input" id="all_done" name="all_done" value="1" {{ $isChecedkAll ? 'required' : '' }} @checked($item->suggestion == 1)>
+                      <input type="checkbox" class="form-check-input" id="all_done" name="all_done" value="1" {{ $isChecedkAll ?  : '' }} @checked($item->suggestion == 1)>
                       <label class="form-check-label" for="all_done">
                         <b>Semua sudah sesuai, Kirim ke Atasan sekarang </b>
                       </label>
@@ -436,11 +441,19 @@
                 @endforeach
                 {{-- END of RECOMENDATIONs --}}
             </div>
-            <div class="card-footer text-right">
-              <button type="submit" class="btn btn-sm bg-gradient-success px-3 rounded-pill">
-                <i class="fa fa-check"></i> SIMPAN
-              </button>
-            </div>
+            @if ( session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 )
+              <div class="card-footer text-right">
+                <button type="submit" class="btn btn-sm bg-gradient-success px-3 rounded-pill">
+                  <i class="fa fa-check"></i> SIMPAN
+                </button>
+              </div> 
+            @elseif($item->is_decider == 0)
+              <div class="card-footer text-right">
+                <button type="submit" class="btn btn-sm bg-gradient-success px-3 rounded-pill">
+                  <i class="fa fa-check"></i> KEMBALI KE PENGAJUAN
+                </button>
+              </div>   
+            @endif            
           </div>
         </form>
       </div>

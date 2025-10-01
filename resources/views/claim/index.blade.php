@@ -89,6 +89,7 @@
                         <th>NILAI <br>PENGAJUAN</th>
                         <th>TANGGAL <br> PENGAJUAN</th>
                         <th>TANGGAL <br> KEJADIAN</th>
+                        <th>TANGGAL <br> PERUBAHAN</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -106,14 +107,15 @@
                         <td>{{ after_qq($claim->name) }}</td>
                         <td class="text-center">{{ number_format($claim->claim_amount) }}</td>
                         <td class="text-center">{{ $claim->incident_date }}</td>
-                        <td class="text-center">{{ date('Y-m-d', strtotime($claim->created_at)) }}</td>
+                        <td class="text-center">{{ date('Y-m-d h:m:s', strtotime($claim->created_at)) }}</td>
+                        <td class="text-center">{{ date('Y-m-d h:m:s', strtotime($claim->updated_at)) }}</td>
                       </tr>
                       @empty
                       @endforelse
                     </tbody>
                     <tfoot>
                       <tr>
-                        <td colspan="9"></td>
+                        <td colspan="10"></td>
                       </tr>
                     </tfoot>
                   </table>

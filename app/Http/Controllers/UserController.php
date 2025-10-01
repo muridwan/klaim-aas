@@ -31,7 +31,8 @@ class UserController extends Controller
 				[
 					'is_logged' => true,
 					'user_uuid' => $user_pgd->uuid,
-					'user_data' => $user_pgd
+					'user_data' => $user_pgd,
+					'user_role' => $user_role
 				]
 			);
 			$this->add_log("Login System");
@@ -47,7 +48,8 @@ class UserController extends Controller
 					[
 						'is_logged' => true,
 						'user_uuid' => $user_aas->uuid,
-						'user_data' => $user_aas
+						'user_data' => $user_aas,
+						'user_role' => $user_role
 					]
 				);
 				$this->add_log("Login System");

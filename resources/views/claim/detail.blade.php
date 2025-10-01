@@ -525,12 +525,12 @@
     if (inputValue != '') {
       // Menghapus titik dan mengkonversi string menjadi angka
       let newValue = parseInt(inputValue.replace(/\./g, ''), 10);
-      let compared = parseInt(camparedValue.replace(/\,/g, ''), 10);
+      let compared = parseInt(camparedValue.replace(/\./g, ''), 10);
 
       // Pastikan nilai yang dibandingkan adalah angka
       if (!isNaN(newValue) && !isNaN(compared)) {
         if (newValue > compared) {
-        alert("Nilai Pengajuan Melebihi Plafon Pembiayaan");
+        alert("Nilai Pengajuan Melebihi Plafon Pembiayaan"+newValue+compared);
         $(this).addClass('is-invalid');
         $(this).val('');
         }

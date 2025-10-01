@@ -41,12 +41,18 @@ class ClaimController extends Controller
       $url     = route('claims', ['status' => 'review']);
       $menu   = 'peninjauan';
       $title   = 'data peninjauan klaim';
-      $claims = Claim::with('office:id,name')->where('status', 1)->orderBy('code')->get();
+      if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+        $claims = Claim::with('office:id,name')->where('status', 1)->orderBy('code')->get();
+      else
+        $claims = Claim::with('office:id,name')->where('status', 1)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get();
     } else if (strtolower($request->status) == 'decision') {
       $url     = route('claims', ['status' => 'decision']);
       $menu   = 'keputusan';
       $title   = 'data keputusan klaim';
-      $claims = Claim::with('office:id,name')->where('status', 2)->orderBy('code')->get();
+      if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+        $claims = Claim::with('office:id,name')->where('status', 2)->orderBy('code')->get();
+      else
+        $claims = Claim::with('office:id,name')->where('status', 2)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get();      
     } else if (strtolower($request->status) == 'payment') {
       $url     = route('claims', ['status' => 'payment']);
       $menu   = 'pembayaran';
@@ -126,7 +132,7 @@ class ClaimController extends Controller
         // $incident_date     = Carbon::createFromFormat('d-m-Y', $request->incident_date)->format('Y-m-d');
         $validation_data  = session('validation_data');
         $office           = Office::select('id', 'code', 'category')->where('code', $validation_data->IDBranch)->first();
-        $order            = Claim::select('order_no')->orderByDesc('order_no')->withTrashed()->first()->order ?? 0;
+        $order            = Claim::select('order_no')->orderByDesc('order_no')->withTrashed()->first()->order_no ?? 0;
         if ($office->category == 3) {
           $branch          = Limit::with([
             'position',
@@ -332,66 +338,88 @@ class ClaimController extends Controller
   {
     // $this->debug($request->all());
     // die;
-    DB::beginTransaction();
-    try {
-      $uuid       = $request->uuid;
-      $recom_uuid = $request->recom_uuid;
-      $recom_note = $request->recom_note;
-      // $documents  = $request->documents;
-      // $decisions  = $request->decisions;
-      // $remarks    = $request->remarks;
+    if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+    {
+      DB::beginTransaction();
+      try {
+        $uuid       = $request->uuid;
+        $recom_uuid = $request->recom_uuid;
+        $recom_note = $request->recom_note;
+        // $documents  = $request->documents;
+        // $decisions  = $request->decisions;
+        // $remarks    = $request->remarks;
 
-      // Records
-      $claim       = Claim::where('uuid', $uuid)->firstOrFail();
-      $recommend   = Recommendation::where('uuid', $recom_uuid)->firstOrFail();
-      $next       = $request->all_done ?? 0;
-      $last       = false;
+        // Records
+        $claim       = Claim::where('uuid', $uuid)->firstOrFail();
+        $recommend   = Recommendation::where('uuid', $recom_uuid)->firstOrFail();
+        $next       = $request->all_done ?? 0;
+        $last       = false;
 
-      if ($recommend->is_decider == 1) {
-        // 
-      } else {
-        if ($next == 1) {
-          $next_recom = Recommendation::select('claim_id', 'position_id')->where('claim_id', $claim->id)->where('sequence', $recommend->sequence + 1)->first();
-          if ($next_recom->position_id == $claim->position_id) {
-            $last = true;
+        if ($recommend->is_decider == 1) {
+          // 
+        } else {
+          if ($next == 1) {
+            $next_recom = Recommendation::select('claim_id', 'position_id')->where('claim_id', $claim->id)->where('sequence', $recommend->sequence + 1)->first();
+            if ($next_recom->position_id == $claim->position_id) {
+              $last = true;
+            }
           }
         }
+
+        // Update Documents
+        // Diganti dengan AJAX
+        // if ($recommend->sequence == 1) {
+        //   for ($i = 0; $i < count($documents); $i++) {
+        //     Document::where('uuid', $documents[$i])->update([
+        //       'is_accepted'  => $decisions[$i]  ?? 0,
+        //       'remarks'      => $remarks[$i]   ?? null,
+        //     ]);
+        //   }
+        // }
+
+        // Update Recommendation
+        Recommendation::where('uuid', $recom_uuid)->update([
+          'description'    => $recom_note                 ?? null,
+          'created_by'    => $this->get_data_user()->id ?? null,
+          'suggestion'    => ($next) ? 1 : 0,
+          'created_at'    => date('Y-m-d H:i'),
+        ]);
+
+        // Update Claim
+        Claim::where('uuid', $uuid)->update([
+          'reviewed_at'    => date('Y-m-d H:i'),
+          'reviewed_by'    => $this->get_data_user()->id ?? null,
+          'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
+          'status'        => ($last) ? $claim->status + 1 :  $claim->status,
+        ]);
+
+        DB::commit();
+        return redirect()->route('claim.detail', ['uuid' => $claim->uuid])->with('pesan_success', "Pengajuan Klaim '$claim->code' Berhasil");
+      } catch (\Exception $e) {
+        DB::rollback();
+        print($e);
+        die;
+        return ['error' => true, 'message' => $e->getMessage()];
       }
+    }
+    else
+    {
+      DB::beginTransaction();
+      try {
+        $uuid       = $request->uuid;
+        $claim       = Claim::where('uuid', $uuid)->firstOrFail();
+        Claim::where('uuid', $uuid)->update([
+          'status'        => 0,
+        ]);
 
-      // Update Documents
-      // Diganti dengan AJAX
-      // if ($recommend->sequence == 1) {
-      //   for ($i = 0; $i < count($documents); $i++) {
-      //     Document::where('uuid', $documents[$i])->update([
-      //       'is_accepted'  => $decisions[$i]  ?? 0,
-      //       'remarks'      => $remarks[$i]   ?? null,
-      //     ]);
-      //   }
-      // }
-
-      // Update Recommendation
-      Recommendation::where('uuid', $recom_uuid)->update([
-        'description'    => $recom_note                 ?? null,
-        'created_by'    => $this->get_data_user()->id ?? null,
-        'suggestion'    => ($next) ? 1 : 0,
-        'created_at'    => date('Y-m-d H:i'),
-      ]);
-
-      // Update Claim
-      Claim::where('uuid', $uuid)->update([
-        'reviewed_at'    => date('Y-m-d H:i'),
-        'reviewed_by'    => $this->get_data_user()->id ?? null,
-        'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
-        'status'        => ($last) ? $claim->status + 1 :  $claim->status,
-      ]);
-
-      DB::commit();
-      return redirect()->route('claim.detail', ['uuid' => $claim->uuid])->with('pesan_success', "Pengajuan Klaim '$claim->code' Berhasil");
-    } catch (\Exception $e) {
-      DB::rollback();
-      print($e);
-      die;
-      return ['error' => true, 'message' => $e->getMessage()];
+        DB::commit();
+        return redirect()->route('claim.detail', ['uuid' => $uuid])->with('pesan_success', "Pengajuan Klaim '$claim->code' Berhasil");
+      }catch (\Exception $e) {
+        DB::rollback();
+        print($e);
+        die;
+        return ['error' => true, 'message' => $e->getMessage()];
+      }
     }
   }
 
