@@ -215,6 +215,43 @@
                             @enderror
                           </div>
                         </div>
+
+                        <div class="form-group row">
+                          <label for="cause" class="col-sm-5 col-form-label">
+                            LOKASI KLAIM<span class="reqs">*</span>
+                          </label>
+                          <div class="col-sm-7">
+                            <select class="form-control @error('location') is-invalid @enderror" name="location" id="location">
+                              <option value="">Pilih:</option>
+                              @foreach ($locations as $location)
+                              <option @selected($location->id == old('cause')) value="{{ $location->id }}">
+                                {{ $location->loc_desc ?? '-' }}
+                              </option>
+                              @endforeach
+                            </select>
+                            @error('location')
+                            <div class="invalid-feedback font-weight-bold">
+                              {{ $message }}!
+                            </div>
+                            @enderror
+                          </div>
+                        </div>
+
+                        <div class="form-group row">
+                          <label for="descriptionloc" class="col-sm-5 col-form-label">
+                            KETERANGAN LOKASI KLAIM<span class="reqs">*</span>
+                          </label>
+                          <div class="col-sm-7">
+                            <textarea class="form-control @error('descriptionloc') is-invalid @enderror" name="descriptionloc"
+                              id="descriptionloc" rows="4">{{ old('descriptionloc') ?? '' }}</textarea>
+                            @error('descriptionloc')
+                            <div class="invalid-feedback font-weight-bold">
+                              {{ $message }}!
+                            </div>
+                            @enderror
+                          </div>
+                        </div>
+
                       </div>
                     </div>
                     {{-- End of Fields --}}

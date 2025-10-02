@@ -266,6 +266,29 @@
                           @enderror
                         </div>
                       </div>
+
+                      <div class="form-group row">
+                        <label for="location" class="col-sm-5 col-form-label">LOKASI KLAIM</label>
+                        <div class="col-sm-7">
+                          <input type="text" class="form-control form-control text-dark" id="location" name=""
+                            value="{{ $claim->location->loc_desc }}" readonly>
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="loss_loc_desc" class="col-sm-5 col-form-label">
+                          KETERANGAN LOKASI KLAIM<span class="reqs">*</span>
+                        </label>
+                        <div class="col-sm-7">
+                          <textarea class="form-control @error('loss_loc_desc') is-invalid @enderror" name="loss_loc_desc"
+                            id="loss_loc_desc" rows="5">{{ old('loss_loc_desc') ?? $claim->loss_loc_desc }}</textarea>
+                          @error('loss_loc_desc')
+                          <div class="invalid-feedback font-weight-bold">
+                            {{ $message }}!
+                          </div>
+                          @enderror
+                        </div>
+                      </div>
                     </div>
                   </div>
 

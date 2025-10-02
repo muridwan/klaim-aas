@@ -46,6 +46,11 @@ class Claim extends Model
 		return $this->belongsTo(Outlet::class);
 	}
 
+	public function location()
+	{
+		return $this->belongsTo(Location::class);
+	}
+
 	public function creater()
 	{
 		return $this->belongsTo(User::class, 'created_by');

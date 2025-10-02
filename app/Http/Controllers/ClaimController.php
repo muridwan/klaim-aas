@@ -13,6 +13,7 @@ use App\Models\Position;
 use App\Models\Recommendation;
 use App\Models\User;
 use App\Models\User_role;
+use App\Models\Location;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -88,6 +89,7 @@ class ClaimController extends Controller
     }
     $occupations  = Occupation::select('id', 'name')->orderBy('name')->get();
     $causes       = Cause::select('id', 'name', 'business_id')->with('business:id,name')->orderBy('name')->get();
+    $locations     = Location::select('id','code_loc','loc_desc')->orderBy('code_loc')->get();
 
     $data  = [
       'url'         => 'offices',
@@ -96,6 +98,7 @@ class ClaimController extends Controller
       'data'        => $validation_data,
       'occupations' => $occupations ?? [],
       'causes'      => $causes      ?? [],
+      'locations'   => $locations ?? [], 
     ];
 
     return view('claim.create', $data);
@@ -196,6 +199,8 @@ class ClaimController extends Controller
         $claim->outlet_id     = session('user_data')['outlet_id'] ?? null;//3855 ?? null;
         $claim->created_by    = session('user_data')['id'] ?? 3855;//3855 ?? null;
         // $claim->created_by 		= $this->get_data_user()->id ?? null;
+        $claim->location_id   = $request->location ?? null;
+        $claim->loss_loc_desc = $request->descriptionloc ?? null;
         $claim->save();
 
         // Insert Reqs Documents
@@ -271,7 +276,8 @@ class ClaimController extends Controller
       'position.head_position.user',
       'documents',
       'documents.cause_file.file',
-      'recommendations'
+      'recommendations',
+      'location:id,code_loc,loc_desc'
     ])->where('uuid', $uuid)->firstOrFail();
 
     $isChecedkAll = !Document::where('claim_id', $claim->id)->where('is_accepted', '!=', 1)->exists();
@@ -352,11 +358,15 @@ class ClaimController extends Controller
         // Records
         $claim       = Claim::where('uuid', $uuid)->firstOrFail();
         $recommend   = Recommendation::where('uuid', $recom_uuid)->firstOrFail();
+        $causes     = Cause::where('id',$claim->cause_id)->firstOrFail();
+        $locations  = Location::where('id',$claim->location_id)->firstOrFail();
+        
         $next       = $request->all_done ?? 0;
         $last       = false;
 
         if ($recommend->is_decider == 1) {
           // 
+          $last = true;
         } else {
           if ($next == 1) {
             $next_recom = Recommendation::select('claim_id', 'position_id')->where('claim_id', $claim->id)->where('sequence', $recommend->sequence + 1)->first();
@@ -364,8 +374,8 @@ class ClaimController extends Controller
               $last = true;
             }
           }
-        }
-
+        }        
+        
         // Update Documents
         // Diganti dengan AJAX
         // if ($recommend->sequence == 1) {
@@ -384,7 +394,7 @@ class ClaimController extends Controller
           'suggestion'    => ($next) ? 1 : 0,
           'created_at'    => date('Y-m-d H:i'),
         ]);
-
+        
         // Update Claim
         Claim::where('uuid', $uuid)->update([
           'reviewed_at'    => date('Y-m-d H:i'),
@@ -392,6 +402,55 @@ class ClaimController extends Controller
           'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
           'status'        => ($last) ? $claim->status + 1 :  $claim->status,
         ]);
+        
+        if ($claim->status==2){          
+          try {
+            $url = 'https://uatassist.askridasyariah.com:2811/aas/ClaimSubMission';
+            //$url = 'https://assist.askridasyariah.co.id:2810/aas/ClaimPolicyPegadaian';
+            $response = Http::withHeaders([
+              'Content-Type'   => 'application/json',
+              'Accept'         => 'application/json',
+            ])->withOptions([
+              'verify' => storage_path('cert/pem_star_askridasyariah_com_2025.pem'),
+            ])->post($url, [
+              'RegistrationDate' => $claim->created_at ?? '',
+              'LossDate'         => $claim->incident_date ?? '',
+              'IDPeserta'        => responseToString($claim->response)->IDPeserta ?? '',
+              'NamaPeserta'      => responseToString($claim->response)->NamaPeserta ?? '',
+              'IDBranch'         => responseToString($claim->response)->IDBranch ?? '',
+              'IDBank'           => responseToString($claim->response)->IDBank ?? '',
+              'NamaBank'         => responseToString($claim->response)->NamaBank ?? '',
+              'BranchName'       => responseToString($claim->response)->BranchName ?? '',
+              'TOC'              => responseToString($claim->response)->TOC ?? '',
+              'TSI'              => responseToString($claim->response)->TSI ?? '',
+              'Keterangan'       => responseToString($claim->response)->Keterangan ?? '',
+              'NoPol'            => responseToString($claim->response)->NoPol ?? '',
+              'NoCert'           => responseToString($claim->response)->NoCert ?? '',
+              'CauseOfLoss'      => $causes->code_care ?? '',
+              'LossDesc'         => $claim->description ?? '',
+              'LossLocation'     => $locations->code_loc,
+              'LossLocationDesc' => $claim->loss_loc_desc,
+              'EstimateClaim'    => $claim->claim_amount   
+            ]);
+
+            if ($response->successful()) {
+              $array   = $response->json();
+              $object  = (object) $array;
+              if($object->NoKlaim){                
+                Claim::where('uuid', $uuid)->update([
+                  'claimno' => $object->NoKlaim ?? ''
+                ]);                  
+              }              
+              
+            } else {
+              return redirect()->route('claims', ['status' => 'decision'])->with('pesan_error', "gagal disimpan");
+            }
+          } catch (\Exception $e) {
+            print($e);
+            die;
+            return ['error' => true, 'message' => $e->getMessage()];
+          }
+        }        
 
         DB::commit();
         return redirect()->route('claim.detail', ['uuid' => $claim->uuid])->with('pesan_success', "Pengajuan Klaim '$claim->code' Berhasil");

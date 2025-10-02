@@ -308,6 +308,18 @@
                       </td>
                     </tr>
                     <tr>
+                      <td class="bg-secondary font-weight-bold">LOKASI KLAIM / <br> <i>Location Of Loss</i></td>
+                      <td class="border-right">
+                        <b> {{ $claim->location->loc_desc ?? '' }}</b>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="bg-secondary font-weight-bold">KETERANGAN LOKASI KLAIM</td>
+                      <td class="border-right">
+                        <b> {{ $claim->loss_loc_desc }}</b>
+                      </td>
+                    </tr>
+                    <tr>
                       <td class="p-0" colspan="2"></td>
                     </tr>
                   </table>
@@ -447,7 +459,7 @@
                   <i class="fa fa-check"></i> SIMPAN
                 </button>
               </div> 
-            @elseif($item->is_decider == 0)
+            @elseif($item->sequence > $claim->sequence)
               <div class="card-footer text-right">
                 <button type="submit" class="btn btn-sm bg-gradient-success px-3 rounded-pill">
                   <i class="fa fa-check"></i> KEMBALI KE PENGAJUAN
@@ -542,7 +554,7 @@
         console.log(result);
         if( result.isChecedkAll == true ){
           $("#all_done_block").show();
-          $("#all_done").attr("required", true);
+          $("#all_done").attr("required", false);
         }else{
           $("#all_done").removeAttr("required");
           $("#all_done_block").hide();
