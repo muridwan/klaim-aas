@@ -62,12 +62,15 @@ class UserController extends Controller
 		}
 	}
 
-	public function logout()
+	public function logout(Request $request)
 	{
 		$this->add_log("Logout System");
 		session()->flush();
+		$request->session()->invalidate();
+        $request->session()->regenerateToken();
 		return redirect('login')->with('pesan_success', 'Logout berhasil');
 	}
+	
 
 	/**
 	 * Display a listing of the resource.

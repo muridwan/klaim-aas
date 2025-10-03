@@ -15,12 +15,22 @@
         <span class="badge badge-warning navbar-badge"></span>
       </a>
       <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">        
-        <div class="dropdown-divider"></div>
-        <a href="/logout" class="dropdown-item">
-          <i class="fas fa-envelope mr-2"></i> Logout
-          <span class="float-right text-muted text-sm"></span>
+        <div class="dropdown-divider"></div>        
+        <!-- Ubah Password -->
+        <a href="{{ route('password.edit') }}" class="dropdown-item">
+          <i class="fas fa-key mr-2"></i> Ubah Password
         </a>
+        <div class="dropdown-divider"></div>
+        <!-- Logout -->
+        <a href="#" class="dropdown-item"
+          onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+          <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+          @csrf
+        </form>
       </div>
+
       {{-- <a class="nav-link text-white" data-toggle="dropdown" href="#">
         <i class="fas fa-user-cog text-white"></i>
         <span class="badge badge-warning navbar-badge">15</span>

@@ -11,7 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Middleware\Authentication;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\PasswordController;
 
 
 Route::get('/', function () {
@@ -23,7 +23,7 @@ Route::post('/upload-excel',  [ExcelController::class, 'uploadExcel'])->name('up
 
 // Otentikasi
 Route::get('login',         [UserController::class, 'login'])->name('login');
-Route::get('logout',        [UserController::class, 'logout'])->name('logout');
+Route::post('logout',        [UserController::class, 'logout'])->name('logout');
 Route::post('login_action', [UserController::class, 'login_action'])->name('login_action');
 
 Route::get('offices',       [MasterController::class, 'office'])->name('offices')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');
@@ -97,3 +97,7 @@ Route::post('/upload/delete',     [ClaimController::class, 'deleteFile'])->name(
 Route::post('/file_description',  [ClaimController::class, 'file_description'])->name('file_description');
 Route::post('/file_decision',     [ClaimController::class, 'file_decision'])->name('file_decision');
 Route::post('/file_remarks',      [ClaimController::class, 'file_remarks'])->name('file_remarks');
+
+Route::get('/password/change', [PasswordController::class, 'edit'])->name('password.edit')->middleware(Authentication::class);
+Route::post('/password/change', [PasswordController::class, 'update'])->name('password.update')->middleware(Authentication::class);
+
