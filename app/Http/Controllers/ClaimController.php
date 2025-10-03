@@ -219,12 +219,13 @@ class ClaimController extends Controller
         }
 
         // Insert Recommendations
-        $childs     = $this->childs($position->code);
-        $arrayCount = count($childs);
+        // $childs     = $this->childs($position->code);        
+        // $arrayCount = count($childs);
         $i           = 0;
 
-        foreach ($childs as $key => $value) {
-          $isLast                 = ($i === $arrayCount - 1);
+        //foreach ($childs as $key => $value) {
+        for ($i=0;$i<=1;$i++) {  
+          $isLast                 = $i;//($i === $arrayCount - 1);
           $recommed               = new Recommendation();
           $recommed->uuid         = Str::uuid()->toString();
           $recommed->code         = null;
@@ -233,12 +234,12 @@ class ClaimController extends Controller
           $recommed->description   = null;
           $recommed->is_decider   = ($isLast) ? 1 : 0;
           $recommed->claim_id     = $claim->id;
-          $recommed->position_id   = $value->first()->position_id ?? null;
+          $recommed->position_id   = $position->id;//$value->first()->position_id ?? null;
           $recommed->created_at   = null;
           $recommed->updated_at   = null;
           // $recommed->position_id 	= $value[0]->position_id ?? null;
           $recommed->save();
-          $i++;
+          //$i++;
         }
 
         $this->add_log('Menambahkan data klaim');
@@ -392,6 +393,7 @@ class ClaimController extends Controller
           'description'    => $recom_note                 ?? null,
           'created_by'    => $this->get_data_user()->id ?? null,
           'suggestion'    => ($next) ? 1 : 0,
+          'position_id'   => $this->get_data_user()->position_id,//Session('user_data')['position_id'],
           'created_at'    => date('Y-m-d H:i'),
         ]);
         
@@ -407,14 +409,10 @@ class ClaimController extends Controller
           try {
             $url = 'https://uatassist.askridasyariah.com:2811/aas/ClaimSubMission';
             //$url = 'https://assist.askridasyariah.co.id:2810/aas/ClaimPolicyPegadaian';
-            $response = Http::withHeaders([
-              'Content-Type'   => 'application/json',
-              'Accept'         => 'application/json',
-            ])->withOptions([
-              'verify' => storage_path('cert/pem_star_askridasyariah_com_2025.pem'),
-            ])->post($url, [
-              'RegistrationDate' => $claim->created_at ?? '',
-              'LossDate'         => $claim->incident_date ?? '',
+            
+            $payload = [
+              'RegistrationDate' => optional($claim->created_at)->format('Y-m-d'), // pastikan format
+              'LossDate'         => $claim->incident_date,
               'IDPeserta'        => responseToString($claim->response)->IDPeserta ?? '',
               'NamaPeserta'      => responseToString($claim->response)->NamaPeserta ?? '',
               'IDBranch'         => responseToString($claim->response)->IDBranch ?? '',
@@ -422,19 +420,27 @@ class ClaimController extends Controller
               'NamaBank'         => responseToString($claim->response)->NamaBank ?? '',
               'BranchName'       => responseToString($claim->response)->BranchName ?? '',
               'TOC'              => responseToString($claim->response)->TOC ?? '',
-              'TSI'              => responseToString($claim->response)->TSI ?? '',
+              'TSI'              => (float) responseToString($claim->response)->TSI ?? 0,
               'Keterangan'       => responseToString($claim->response)->Keterangan ?? '',
               'NoPol'            => responseToString($claim->response)->NoPol ?? '',
               'NoCert'           => responseToString($claim->response)->NoCert ?? '',
               'CauseOfLoss'      => $causes->code_care ?? '',
               'LossDesc'         => $claim->description ?? '',
-              'LossLocation'     => $locations->code_loc,
-              'LossLocationDesc' => $claim->loss_loc_desc,
-              'EstimateClaim'    => $claim->claim_amount   
-            ]);
-
-            if ($response->successful()) {
-              $array   = $response->json();
+              'LossLocation'     => $locations->code_loc ?? '',
+              'LossLocationDesc' => $claim->loss_loc_desc ?? '',
+              'EstimateClaim'    => (float) $claim->claim_amount ?? 0,
+            ];
+            //dd($payload); // cek dulu sebelum request
+            $responseAPI = Http::withHeaders([
+              'Content-Type'   => 'application/json',
+              'Accept'         => 'application/json',
+            ])->withOptions([
+              //'verify' =>false,
+              'verify' => storage_path('cert/pem_star_askridasyariah_com_2025.pem'),
+            ])->asJson()->post($url, $payload);
+            //dd($responseAPI->status(), $responseAPI->body());  
+            if ($responseAPI->successful()) {
+              $array   = $responseAPI->json();
               $object  = (object) $array;
               if($object->NoKlaim){                
                 Claim::where('uuid', $uuid)->update([

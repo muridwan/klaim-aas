@@ -420,8 +420,8 @@
                   <div class="col-12">
                     <div class="form-group mt-1">
                       <label for="recom_note{{ $item->sequence }}">
-                        <i class="fas fa-caret-right"></i> CATATAN <u>{{
-                          strtoupper($item->position->name) }}</u> :
+                        <i class="fas fa-caret-right"></i> CATATAN :
+                        {{-- <i class="fas fa-caret-right"></i> CATATAN <u>{{ strtoupper($item->position->name) }}</u> : --}}
                       </label>
                       @if ( session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 )
                         <textarea class="form-control" id="recom_note{{ $item->sequence }}" name="recom_note" rows="3" required
@@ -433,7 +433,7 @@
                       @if ( $item->created_at AND $item->created_by )
                       <small>
                         <span>
-                          Oleh: {{ $item->creater->name ?? '-' }}
+                          Oleh: {{ $item->creater->name ." (".strtoupper($item->position->name).")" ?? '-' }}
                           , Pada: {{ date('d-m-Y, H:i', strtotime( $item->created_at )) . " WIB" }}
                         </span>
                       </small>
