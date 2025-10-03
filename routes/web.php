@@ -9,12 +9,14 @@ use App\Http\Controllers\CauseController;
 use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\Authentication;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
 
 
 Route::get('/', function () {
-  return redirect()->route('offices');
+  //return redirect()->route('offices');
+  return redirect()->route('claims');
 });
 Route::get('/form-upload',    [ExcelController::class, 'formExcel']);
 Route::post('/upload-excel',  [ExcelController::class, 'uploadExcel'])->name('upload-excel');
@@ -24,9 +26,9 @@ Route::get('login',         [UserController::class, 'login'])->name('login');
 Route::get('logout',        [UserController::class, 'logout'])->name('logout');
 Route::post('login_action', [UserController::class, 'login_action'])->name('login_action');
 
-Route::get('offices',       [MasterController::class, 'office'])->name('offices')->middleware(Authentication::class);
-Route::get('outlets',       [MasterController::class, 'outlet'])->name('outlets')->middleware(Authentication::class);
-Route::get('roles',         [MasterController::class, 'role'])->name('roles')->middleware(Authentication::class);
+Route::get('offices',       [MasterController::class, 'office'])->name('offices')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');
+Route::get('outlets',       [MasterController::class, 'outlet'])->name('outlets')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
+Route::get('roles',         [MasterController::class, 'role'])->name('roles')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
 
 // Institutions
 Route::get('/institution/{uuid}', [InstitutionController::class, 'detail'])->name('institution.detail')->middleware(Authentication::class);
@@ -38,10 +40,10 @@ Route::resource('institutions',   InstitutionController::class)->names([
   'store'     => 'institution.store',
   'update'    => 'institution.update',
   'destroy'   => 'institution.destroy',
-])->middleware(Authentication::class);
+])->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
 
 // USERs
-Route::get('users',   [MasterController::class, 'user'])->name('users')->middleware(Authentication::class);
+Route::get('users',   [MasterController::class, 'user'])->name('users')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
 
 Route::get('/business/{uuid}', [BusinessController::class, 'detail'])->name('business.detail')->middleware(Authentication::class);
 Route::resource('businesses',   BusinessController::class)->names([
@@ -52,12 +54,12 @@ Route::resource('businesses',   BusinessController::class)->names([
   'store'     => 'business.store',
   'update'    => 'business.update',
   'destroy'   => 'business.destroy',
-])->middleware(Authentication::class);
+])->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
 
-Route::get('/business/cause/create',         [CauseController::class, 'create'])->name('cause.create')->middleware(Authentication::class);
-Route::get('/business/cause/{uuid}',         [CauseController::class, 'detail'])->name('cause.detail')->middleware(Authentication::class);
-Route::get('/business/cause/limits/{uuid}',  [CauseController::class, 'limits'])->name('cause.limits')->middleware(Authentication::class);
-Route::post('/business/cause/limits',        [CauseController::class, 'update_limit'])->name('cause.update_limit')->middleware(Authentication::class);
+Route::get('/business/cause/create',         [CauseController::class, 'create'])->name('cause.create')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
+Route::get('/business/cause/{uuid}',         [CauseController::class, 'detail'])->name('cause.detail')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
+Route::get('/business/cause/limits/{uuid}',  [CauseController::class, 'limits'])->name('cause.limits')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
+Route::post('/business/cause/limits',        [CauseController::class, 'update_limit'])->name('cause.update_limit')->middleware(Authentication::class)->middleware(RoleMiddleware::class.':6|7');;
 Route::resource('causes', CauseController::class)->names([
   'store'     => 'cause.store',
   'update'    => 'cause.update',

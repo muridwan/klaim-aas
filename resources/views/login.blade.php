@@ -45,7 +45,7 @@
       <!-- /.login-logo -->
       <div class="card card-outline card-success">
         <div class="card-header text-center">
-          <a href="" class="h5 text-success"><b>INTERKONEKSI <br> ASKRIDA SYARIAH - PEGADAIAN</b></a>
+          <a href="" class="h5 text-success"><b>INTERKONEKSI <br> ASKRIDA SYARIAH - PARTNERS</b></a>
         </div>
         <div class="card-body">
           <p class="login-box-msg">

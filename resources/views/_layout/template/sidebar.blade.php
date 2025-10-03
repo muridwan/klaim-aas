@@ -29,69 +29,68 @@
             </p>
           </a>
         </li>
-        <li class="nav-header font-weight-bold mt-2" style="">DATA MASTER</li>
-        <li class="nav-item border-bottom border-top">
-          <a href="{{ route('institutions') }}"
-            class="nav-link my-1 {{ $menu == 'sumber bisnis' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
-            <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/acquisition.png') }}"
-              alt="sumber bisnis">
-            <p>
-              Sumber Bisnis
-            </p>
-          </a>
-        </li>
-        <li class="nav-item border-bottom">
-          <a href="{{ route('offices') }}"
-            class="nav-link my-1 {{ $menu == 'kantor operasional' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
-            <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/building.png') }}"
-              alt="kantor operasional">
-            <p>
-              Kantor Operasional
-            </p>
-          </a>
-        </li>
-        <li class="nav-item border-bottom">
-          <a href="{{ route('outlets') }}"
-            class="nav-link my-1 {{ $menu == 'outlet' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
-            <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/shop.png') }}" alt="shop">
-            <p>
-              Gerai
-            </p>
-          </a>
-        </li>
-        <li class="nav-item border-bottom">
-          <a href="{{ route('files') }}"
-            class="nav-link my-1 {{ $menu == 'risiko' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
-            <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/compliant.png') }}"
-              alt="Dokumen Pendukung">
-            <p>
-              Dokumen
-            </p>
-          </a>
-        </li>
-        <li class="nav-item border-bottom">
-          <a href="{{ route('businesses') }}"
-            class="nav-link my-1 {{ $menu == 'kelas bisnis' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
-            <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/market-share.png') }}"
-              alt="kelas bisnis">
-            <p>
-              Kelas Bisnis
-            </p>
-          </a>
-        </li>
+        @if(session('user_role')['role_id']==7)
+          <li class="nav-header font-weight-bold mt-2" style="">DATA MASTER</li>
+          <li class="nav-item border-bottom border-top">
+            <a href="{{ route('institutions') }}"
+              class="nav-link my-1 {{ $menu == 'sumber bisnis' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
+              <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/acquisition.png') }}"
+                alt="sumber bisnis">
+              <p>
+                Sumber Bisnis
+              </p>
+            </a>
+          </li>
+          <li class="nav-item border-bottom">
+            <a href="{{ route('offices') }}"
+              class="nav-link my-1 {{ $menu == 'kantor operasional' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
+              <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/building.png') }}"
+                alt="kantor operasional">
+              <p>
+                Kantor Operasional
+              </p>
+            </a>
+          </li>
+          <li class="nav-item border-bottom">
+            <a href="{{ route('outlets') }}"
+              class="nav-link my-1 {{ $menu == 'outlet' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
+              <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/shop.png') }}" alt="shop">
+              <p>
+                Gerai
+              </p>
+            </a>
+          </li>
+          <li class="nav-item border-bottom">
+            <a href="{{ route('files') }}"
+              class="nav-link my-1 {{ $menu == 'risiko' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
+              <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/compliant.png') }}"
+                alt="Dokumen Pendukung">
+              <p>
+                Dokumen
+              </p>
+            </a>
+          </li>
+          <li class="nav-item border-bottom">
+            <a href="{{ route('businesses') }}"
+              class="nav-link my-1 {{ $menu == 'kelas bisnis' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
+              <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/market-share.png') }}"
+                alt="kelas bisnis">
+              <p>
+                Kelas Bisnis
+              </p>
+            </a>
+          </li>
 
-        <li class="nav-item border-bottom">
-          <a href="{{ route('roles') }}"
-            class="nav-link my-1 {{ $menu == 'pengguna' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
-            <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/teamwork.png') }}" alt="pengguna">
-            <p>
-              Pengguna
-            </p>
-          </a>
-        </li>
-
-
-
+          <li class="nav-item border-bottom">
+            <a href="{{ route('roles') }}"
+              class="nav-link my-1 {{ $menu == 'pengguna' ? 'bg-gradient-success font-weight-bold text-white' : '' }}">
+              <img class="mr-2" width="25" src="{{ asset('AdminLTE/dist/img/sidebar/teamwork.png') }}" alt="pengguna">
+              <p>
+                Pengguna
+              </p>
+            </a>
+          </li>
+        @endif  
         <li class="nav-header font-weight-bold mt-2" style="">DATA KLAIM</li>
         <li class="nav-item border-bottom border-top">
           <a href="{{ route('claims', ['status' => 'submission']) }}"

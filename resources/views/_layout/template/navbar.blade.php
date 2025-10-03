@@ -12,9 +12,20 @@
     <li class="nav-item dropdown">
       <a class="nav-link text-white" data-toggle="dropdown" href="#">
         <i class="fas fa-user-cog text-white"></i>
-        <span class="badge badge-warning navbar-badge">15</span>
+        <span class="badge badge-warning navbar-badge"></span>
       </a>
-      <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+      <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">        
+        <div class="dropdown-divider"></div>
+        <a href="/logout" class="dropdown-item">
+          <i class="fas fa-envelope mr-2"></i> Logout
+          <span class="float-right text-muted text-sm"></span>
+        </a>
+      </div>
+      {{-- <a class="nav-link text-white" data-toggle="dropdown" href="#">
+        <i class="fas fa-user-cog text-white"></i>
+        <span class="badge badge-warning navbar-badge">15</span>
+      </a> --}}
+      {{-- <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
         <span class="dropdown-header">15 Notifications</span>
         <div class="dropdown-divider"></div>
         <a href="#" class="dropdown-item">
@@ -33,7 +44,7 @@
         </a>
         <div class="dropdown-divider"></div>
         <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
-      </div>
+      </div> --}}
     </li>
   </ul>
 </nav>

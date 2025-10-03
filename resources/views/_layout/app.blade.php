@@ -79,7 +79,7 @@
           Powered By IT DEV of AAS
         </div>
         <!-- Default to the left -->
-        <strong>Copyright &copy; 2025 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
+        <strong>Copyright &copy; 2025 <a href="https://askridasyariah.co.id">Askrida Syariah</a>.</strong> All rights reserved.
       </footer>
       <!-- /.main-footer -->
 

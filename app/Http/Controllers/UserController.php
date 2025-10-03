@@ -36,7 +36,7 @@ class UserController extends Controller
 				]
 			);
 			$this->add_log("Login System");
-			return redirect()->route('businesses');
+			return redirect()->route('claims');
 		}
 		// AAS
 		else if ($user_aas) {
@@ -53,7 +53,7 @@ class UserController extends Controller
 					]
 				);
 				$this->add_log("Login System");
-				return redirect()->route('businesses');
+				return redirect()->route('claims');
 			} else {
 				return redirect()->route('login')->with('pesan_error', "Akun anda tidak memiliki Otoritas");
 			}
