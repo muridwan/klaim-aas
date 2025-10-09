@@ -58,7 +58,7 @@ class ClaimController extends Controller
       $url     = route('claims', ['status' => 'payment']);
       $menu   = 'pembayaran';
       $title   = 'data pembayaran klaim';
-      $claims = Claim::with('office:id,name')->where('status', 3)->orderBy('code')->get();
+      $claims = Claim::with('office:id,name')->where('status', 3)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get();
     } else {
       return redirect()->route('claims', ['status' => 'submission']);
     }
@@ -794,4 +794,16 @@ class ClaimController extends Controller
 
     return $prefix . '-' . $year . '-' . $number;
   }
+
+  public function search(Request $request)
+    {
+        $query = $request->get('q');
+
+        $claims = Claim::where('claimno', 'like', "%$query%")
+            ->orWhere('name', 'like', "%$query%")
+            ->limit(10)
+            ->get(['id', 'claimno', 'name','policy','certificate', 'claim_amount']);
+
+        return response()->json($claims);
+    }
 }

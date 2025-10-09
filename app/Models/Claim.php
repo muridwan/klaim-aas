@@ -51,6 +51,11 @@ class Claim extends Model
 		return $this->belongsTo(Location::class);
 	}
 
+	public function subrogations()
+    {
+        return $this->hasMany(Subrogation::class);
+    }
+
 	public function creater()
 	{
 		return $this->belongsTo(User::class, 'created_by');

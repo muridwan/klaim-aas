@@ -12,7 +12,8 @@ use App\Http\Middleware\Authentication;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasswordController;
-
+use App\Http\Controllers\SubrogationController;
+use App\Models\Subrogation;
 
 Route::get('/', function () {
   //return redirect()->route('offices');
@@ -76,6 +77,7 @@ Route::resource('files', FileController::class)->names([
 
 
 Route::get('/claim/{uuid}', [ClaimController::class, 'detail'])->name('claim.detail')->middleware(Authentication::class);
+Route::get('/claims/search', [ClaimController::class, 'search'])->name('claims.search');
 Route::resource('claims',   ClaimController::class)->names([
   'index'     => 'claims',
   // 'show'      => 'claim.show',
@@ -101,3 +103,24 @@ Route::post('/file_remarks',      [ClaimController::class, 'file_remarks'])->nam
 Route::get('/password/change', [PasswordController::class, 'edit'])->name('password.edit')->middleware(Authentication::class);
 Route::post('/password/change', [PasswordController::class, 'update'])->name('password.update')->middleware(Authentication::class);
 
+
+
+Route::resource('subrogations',   SubrogationController::class)->names([
+  'index'     => 'subrogations.index',
+  // 'show'      => 'business.show',
+  'create'    => 'subrogations.create',
+  'edit'      => 'subrogations.edit',
+  'store'     => 'subrogations.store',
+  'update'    => 'subrogations.update',
+  'destroy'   => 'subrogations.destroy',
+])->middleware(Authentication::class);
+
+
+//Route::resource('subrogations', SubrogationController::class);
+// Route resource otomatis menghasilkan:
+// GET     /subrogations            -> index
+// GET     /subrogations/create     -> create
+// POST    /subrogations            -> store
+// GET     /subrogations/{id}/edit  -> edit
+// PUT     /subrogations/{id}       -> update
+// DELETE  /subrogations/{id}       -> destroy
