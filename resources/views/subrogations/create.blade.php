@@ -44,12 +44,12 @@
 
         <div class="mb-3">
             <label>Nama Pihak Ketiga</label>
-            <input type="text" name="third_party_name" class="form-control" required>
+            <input type="text" id="third_party_name" name="third_party_name" class="form-control" required>
         </div>
 
         <div class="mb-3">
             <label>Tipe Pihak Ketiga</label>
-            <input type="text" name="third_party_type" class="form-control">
+            <input type="text"id="third_party_type" name="third_party_type" class="form-control">
         </div>
         <div class="mb-3">
             <label>Jumlah Subrogasi</label>
@@ -77,7 +77,9 @@
 </div>
 
 {{-- Script Live Search --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
+<script src="{{ asset('AdminLTE') }}/plugins/jquery/jquery-3.6.0.min.js"></script>
+
 <script>
 
 $(document).ready(function () {
@@ -176,10 +178,14 @@ $(function() {
         const id = $(this).data('id');
         const number = $(this).data('number');
         const name = $(this).data('name');
+        const amount = $(this).data('amount');
 
         $('#claim_id').val(id);
         $('#search-claim').val(`${number} - ${name}`);
+        $('#third_party_name').val(`${name}`)
         $('#claim-results').slideUp(100);
+        $('#subrogation_amount_display').val(`${Number(amount).toLocaleString()}`);
+        $('#subrogation_amount').val(`${Number(amount).toLocaleString()}`);
     });
 
     // Klik di luar dropdown

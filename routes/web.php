@@ -104,6 +104,7 @@ Route::get('/password/change', [PasswordController::class, 'edit'])->name('passw
 Route::post('/password/change', [PasswordController::class, 'update'])->name('password.update')->middleware(Authentication::class);
 
 
+Route::get('/subrogations/search', [SubrogationController::class, 'search'])->name('subrogations.search')->middleware(Authentication::class);
 
 Route::resource('subrogations',   SubrogationController::class)->names([
   'index'     => 'subrogations.index',

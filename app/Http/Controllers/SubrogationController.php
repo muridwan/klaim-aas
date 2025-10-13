@@ -10,7 +10,15 @@ class SubrogationController extends Controller
 {
     public function index()
     {
-        $subrogations = Subrogation::with('claim')->latest()->paginate(10);
+        if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+            $subrogations = Subrogation::with('claim')->latest()->paginate(10);
+        else
+            $subrogations = Subrogation::with('claim')
+                            ->whereHas('claim', function ($q) {
+                                $q->where('outlet_id', session('user_data')['outlet_id']);
+                            })
+                            ->latest()
+                            ->paginate(10);
         $data  = [        
             'menu'          =>  'Subrogations' ,
             'title'         =>  'Subrogations',  
@@ -53,7 +61,7 @@ class SubrogationController extends Controller
     {
         $claims = Claim::all();
         $data  = [        
-            'menu'          =>  'Create' ,
+            'menu'          =>  'Edit' ,
             'title'         =>  'Subrogations',  
             'claims'        =>  $claims,      
             'subrogation'   =>  $subrogation,
@@ -64,7 +72,7 @@ class SubrogationController extends Controller
     public function update(Request $request, Subrogation $subrogation)
     {
         $validated = $request->validate([
-            'claim_id' => 'required|exists:claims,id',
+            'claim_id' => 'required|exists:ap_claims,id',
             'third_party_name' => 'required|string|max:255',
             'third_party_type' => 'nullable|string|max:100',
             'subrogation_amount' => 'required|numeric|min:0',
@@ -86,4 +94,33 @@ class SubrogationController extends Controller
         return redirect()->route('subrogations.index')
             ->with('success', 'Subrogasi berhasil dihapus.');
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->q;
+        $status = $request->status;
+
+        $subrogations = Subrogation::with('claim:id,claimno,outlet_id')
+            ->when($query, function ($q) use ($query) {
+                $q->whereHas('claim', function ($sub) use ($query) {
+                    $sub->where('claimno', 'like', "%{$query}%");
+                })
+                ->orWhere('third_party_name', 'like', "%{$query}%");
+            })
+            ->when($status, function ($q) use ($status) {
+                $q->where('status', $status);
+            })
+            ->latest()
+            ->paginate(10);
+
+        if ($request->ajax()) {
+            return view('subrogations.partials.table', compact('subrogations'))->render();
+        }
+
+        return view('subrogations.index', compact('subrogations'));
+    }
+
+
+
+
 }

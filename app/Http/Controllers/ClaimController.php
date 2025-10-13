@@ -37,7 +37,10 @@ class ClaimController extends Controller
       $url     = route('claims', ['status' => 'submission']);
       $menu   = 'pengajuan';
       $title   = 'data pengajuan klaim';
-      $claims = Claim::with('office:id,name')->where('status', 0)->orderBy('code')->get();
+      if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+        $claims = Claim::with('office:id,name')->where('status', 0)->orderBy('code')->get();
+      else
+        $claims = Claim::with('office:id,name')->where('status', 0)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get();
     } else if (strtolower($request->status) == 'review') {
       $url     = route('claims', ['status' => 'review']);
       $menu   = 'peninjauan';
@@ -798,12 +801,20 @@ class ClaimController extends Controller
   public function search(Request $request)
     {
         $query = $request->get('q');
-
-        $claims = Claim::where('claimno', 'like', "%$query%")
-            ->orWhere('name', 'like', "%$query%")
-            ->limit(10)
-            ->get(['id', 'claimno', 'name','policy','certificate', 'claim_amount']);
-
-        return response()->json($claims);
+        if (!$query) 
+          return collect([]);
+        else
+          // $claims = Claim::where('claimno', 'like', "%$query%")
+          //     ->orWhere('name', 'like', "%$query%")
+          //     ->limit(10)
+          //     ->get(['id', 'claimno', 'name','policy','certificate', 'claim_amount']);
+          $claims = Claim::where(function($q) use ($query) {
+              $q->where('claimno', 'like', "%$query%")
+                ->orWhere('name', 'like', "%$query%");
+          })
+          ->where('outlet_id', session('user_data')['outlet_id'])
+          ->limit(10)
+          ->get(['id', 'claimno', 'name','policy','certificate', 'claim_amount']);
+          return response()->json($claims);
     }
 }
