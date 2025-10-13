@@ -128,7 +128,7 @@
         </tbody>
     </table> --}}
 
-    {{ $subrogations->links() }}
+    {{-- {{ $subrogations->links() }} --}}
 </div>
 @endsection
 
@@ -187,6 +187,7 @@ $(document).ready(function() {
         let page = $(this).attr('href').split('page=')[1];
         fetchData(page);
     });
+    
 });
 </script>
 @endpush

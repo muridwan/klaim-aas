@@ -118,9 +118,7 @@ class SubrogationController extends Controller
         }
 
         return view('subrogations.index', compact('subrogations'));
-    }
-
-
+    }  
 
 
 }

@@ -34,5 +34,5 @@
 </table>
 
 <div class="mt-3">
-    {!! $subrogations->links() !!}
+    {{ $subrogations->links('pagination::bootstrap-4') }}{{-- {!! $subrogations->links() !!} --}}
 </div>
