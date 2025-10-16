@@ -334,7 +334,11 @@
                           <td class="text-center border">{{ $loop->iteration }}</td>
                           <td>
                             <span id="file-name-{{$loop->iteration}}">
-                              {{ $document->cause_file->file->name ?? '' }}
+                              @if ($document->cause_file_id == 0)
+                                {{ $document->nameothers ?? '' }}
+                              @else
+                                {{ $document->cause_file->file->name ?? '' }}
+                              @endif 
                             </span>
                           </td>
                           <td>

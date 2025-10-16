@@ -14,6 +14,7 @@ use App\Models\Recommendation;
 use App\Models\User;
 use App\Models\User_role;
 use App\Models\Location;
+use App\Models\RecommendationHistory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -399,6 +400,21 @@ class ClaimController extends Controller
           'position_id'   => $this->get_data_user()->position_id,//Session('user_data')['position_id'],
           'created_at'    => date('Y-m-d H:i'),
         ]);
+
+         $recommendation = Recommendation::where('claim_id', $claim->id)
+                    ->where('sequence', $claim->sequence)
+                    ->first();
+
+        // Simpan history
+        RecommendationHistory::create([
+            'uuid'              =>  Str::uuid()->toString(),
+            'recommendation_id' => $recommendation->id,
+            'claim_id'          => $claim->id,
+            'user_id'           => session('user_data')['id'],
+            'note'              => $request->recom_note,
+        ]);
+        
+        $this->add_log("Menambahkan rekomendasi baru untuk klaim [$claim->code]");
         
         // Update Claim
         Claim::where('uuid', $uuid)->update([
@@ -459,7 +475,39 @@ class ClaimController extends Controller
             die;
             return ['error' => true, 'message' => $e->getMessage()];
           }
-        }        
+        }
+        
+        // Update Documents
+        if ($request->has('newdocuments')) {
+          foreach ($request->newdocuments as $doc) {
+            // Jika dokumen lama (punya UUID) → update
+            if (!empty($doc['uuid'])) {
+              Document::where('uuid', $doc['uuid'])->update([
+                'is_accepted' => $doc['is_accepted'] ?? 0,
+                'remarks'     => $doc['remarks'] ?? null,
+                'description' => $doc['description'] ?? null,
+              ]);
+            } 
+            // Jika dokumen baru (tidak punya UUID) → buat baru
+            else {
+              $newDocument = new Document();
+              $newDocument->uuid         = Str::uuid();
+              $newDocument->claim_id     = $claim->id;
+              $newDocument->nameothers   = $doc['name'] ?? null;
+              $newDocument->description  = $doc['description'] ?? null;
+              $newDocument->is_accepted  = $doc['is_accepted'] ?? 0;
+              $newDocument->cause_file_id = null;
+              $newDocument->remarks      = $doc['remarks'] ?? null;
+
+              if (isset($doc['file']) && $doc['file'] instanceof \Illuminate\Http\UploadedFile) {
+                $path = $doc['file']->store('uploads', 'public');
+                $newDocument->document = $path;
+              }
+
+              $newDocument->save();
+            }
+          }
+        }
 
         DB::commit();
         return redirect()->route('claim.detail', ['uuid' => $claim->uuid])->with('pesan_success', "Pengajuan Klaim '$claim->code' Berhasil");
@@ -661,8 +709,15 @@ class ClaimController extends Controller
         $this->add_log("Menghapus Dokumen [$document->document]");
       }
 
-      // Upload New File
-      $fileName = $document->claim->code . '_' . $document->cause_file->file->code . '_' . uniqid() . '.' . $extension;
+      // // Upload New File
+      // $fileName = $document->claim->code . '_' . $document->cause_file->file->code . '_' . uniqid() . '.' . $extension;
+      // $filePath = $file->storeAs('uploads', $fileName, 'public');
+
+      // nama file aman
+      $claimCode = $document->claim->code ?? 'CLAIM';
+      $causeCode = $document->cause_file->file->code ?? 'TAMBAHAN';
+
+      $fileName = "{$claimCode}_{$causeCode}_" . uniqid() . '.' . $extension;
       $filePath = $file->storeAs('uploads', $fileName, 'public');
 
       // Update Table

@@ -121,7 +121,7 @@
 
     <div class="row">
       <div class="col-lg-12">
-        <form action="{{ route('review_action') }}" method="POST" autocomplete="off">
+        <form action="{{ route('review_action') }}" method="POST" enctype="multipart/form-data" autocomplete="off">
           @csrf
           <input type="hidden" name="uuid" value="{{ $claim->uuid }}">
           <div class="card card-success card-outline card-tabs">
@@ -334,6 +334,9 @@
                   <h4 class="font-weight-bold">
                     <i class="far fa-folder-open"></i> <u>DOKUMEN</u>
                   </h4>
+                  <button type="button" id="addDocument" class="btn btn-sm bg-gradient-primary rounded-pill px-3">
+                    <i class="fa fa-plus-circle"></i> Tambah Dokumen
+                  </button>
                 </div>
               </div>
               <div class="table-responsive">
@@ -348,7 +351,7 @@
                       <th style="width: 28%" class="border-right">CATATAN</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="documentTableBody">
                     @forelse ($claim->documents as $document)
                     <input type="hidden" name="documents[{{ $loop->iteration-1 }}]" value="{{ $document->uuid }}">
                     <input type="hidden" id="claim-{{$loop->iteration}}" value="{{ $claim->uuid }}">
@@ -358,19 +361,57 @@
                       <td class="text-center border">{{ $loop->iteration }}</td>
                       <td>
                         <span id="file-name-{{$loop->iteration}}">
-                          {{ $document->cause_file->file->name ?? '' }}
+                          @if ($document->cause_file_id == 0)
+                            {{ $document->nameothers ?? '' }}
+                          @else
+                            {{ $document->cause_file->file->name ?? '' }}
+                          @endif  
                         </span>
                       </td>
                       <td class="text-center border-left">
-                        @if ($document->document)
+                        {{-- @if ($document->document)
                         <a target="_blank" data-lable="{{ $document->cause_file->file->name }}" href="{{ asset('storage/uploads/'. $document->document) }}" class="badge bg-gradient-info px-3 py-1 modalFile" id="status-default-{{$loop->iteration}}">
                           <i class="fa fa-search"></i> 
                         </a>
                         <a href="{{ asset('storage/uploads/'. $document->document) }}" download type="button" class="badge bg-gradient-primary px-3 py-1 mt-2">
                           <i class="fa fa-download"></i> 
                         </a>
-                        @endif
-                        <span id="status-text-{{$loop->iteration}}"></span>
+                        @endif --}}
+                      @if ($document->document)
+                        @php
+                            // Tentukan label & kondisi
+                            $isAdditional = !$document->cause_file; // true kalau cause_file null
+                            $label = $document->cause_file?->file?->name ?? 'File Tambahan';
+                            $badgeClass = $isAdditional ? 'bg-gradient-secondary' : 'bg-gradient-info';
+                            $icon = $isAdditional ? 'fa-search' : 'fa-search';
+                            $tooltip = $isAdditional ? 'Lihat dokumen tambahan (tidak termasuk data awal)' : 'Lihat dokumen';
+                        @endphp
+
+                        <a target="_blank"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          title="{{ $tooltip }}"
+                          data-lable="{{ $label }}"
+                          href="{{ asset('storage/uploads/'. $document->document) }}"
+                          class="badge {{ $badgeClass }} px-3 py-1 modalFile"
+                          id="status-default-{{ $loop->iteration }}">
+                            <i class="fa {{ $icon }}"></i>
+                            {{-- {{ $label }} --}}
+                        </a>
+
+                        <a href="{{ asset('storage/uploads/'. $document->document) }}" 
+                          download 
+                          type="button" 
+                          class="badge bg-gradient-primary px-3 py-1 mt-2"
+                          data-bs-toggle="tooltip"
+                          title="Unduh dokumen">
+                            <i class="fa fa-download"></i> 
+                            {{-- Unduh --}}
+                        </a>
+                      @endif
+  
+
+                      <span id="status-text-{{$loop->iteration}}"></span>
                       </td>
                       <td class="{{ empty($document->description) ? 'text-center' : '' }}">
                         {{{ $document->description ?? '-' }}}
@@ -425,10 +466,10 @@
                       </label>
                       @if ( session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 )
                         <textarea class="form-control" id="recom_note{{ $item->sequence }}" name="recom_note" rows="3" required
-                        @readonly($item->sequence != $claim->sequence)>{{ $item->description ?? '' }}</textarea>
+                        @readonly($item->sequence != $claim->sequence)>{{ $item->description ?? '' }}</textarea>                        
                       @else
                         <textarea disabled="true" class="form-control" id="recom_note{{ $item->sequence }}" name="recom_note" rows="3" required
-                        @readonly($item->sequence != $claim->sequence)>{{ $item->description ?? '' }}</textarea>    
+                        @readonly($item->sequence != $claim->sequence)>{{ $item->description ?? '' }}</textarea>                            
                       @endif
                       @if ( $item->created_at AND $item->created_by )
                       <small>
@@ -437,6 +478,22 @@
                           , Pada: {{ date('d-m-Y, H:i', strtotime( $item->created_at )) . " WIB" }}
                         </span>
                       </small>
+                      @endif
+                      @if ($item->histories->count() > 0)
+                        <div class="mt-2">
+                            <h6><i class="fa fa-history"></i> Riwayat Rekomendasi:</h6>
+                            <ul class="list-group">
+                                @foreach ($item->histories as $history)
+                                    <li class="list-group-item py-1">
+                                        <small>
+                                            <b>{{ $history->user->name }}</b> 
+                                            ({{ date('d-m-Y H:i', strtotime($history->created_at)) }}) :
+                                            {{ $history->note }}
+                                        </small>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                       @endif
                     </div>
                     @if ($item->is_decider == 0  && (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 ))
@@ -516,6 +573,47 @@
     $("td").addClass("align-middle");
 
     showModal();
+
+    let nodoc = {{ count($claim->documents) }}; // start index from existing count
+    let docIndex = 0;
+    $('#addDocument').click(function () {
+      docIndex++;
+      nodoc++;
+
+      let newRow = `
+        <tr id="doc-row-${docIndex}">
+          <td class="text-center border">${nodoc}</td>
+          <td>
+            <input type="text" name="newdocuments[${docIndex}][name]" class="form-control" placeholder="Nama Dokumen">
+          </td>
+          <td>
+            -
+          </td>
+          <td>
+            <input type="text" name="newdocuments[${docIndex}][description]" class="form-control" placeholder="Keterangan">
+          </td>
+          <td class="text-center">
+            <input type="checkbox" name="newdocuments[${docIndex}][is_accepted]" value="1">
+          </td>
+          <td>
+            <textarea name="newdocuments[${docIndex}][remarks]" class="form-control" rows="2" placeholder="Catatan"></textarea>
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-danger rounded-pill removeRow" data-row="${docIndex}">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+
+      $('#documentTableBody').append(newRow);
+    });
+
+    $(document).on('click', '.removeRow', function () {
+      const rowId = $(this).data('row');
+      $(`#doc-row-${rowId}`).remove();
+    });
+
   });
 
   // $('.file_decision').on('input', function() {
