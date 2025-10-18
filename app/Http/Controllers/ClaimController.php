@@ -31,7 +31,7 @@ class ClaimController extends Controller
    */
   public function index(Request $request)
   {
-    $statuses = ['submission', 'review', 'decision', 'payment'];
+    $statuses = ['submission', 'review', 'decision', 'payment','history'];
 
     Session::forget('validation_data');
     if (strtolower($request->status) == 'submission') {
@@ -62,8 +62,19 @@ class ClaimController extends Controller
       $url     = route('claims', ['status' => 'payment']);
       $menu   = 'pembayaran';
       $title   = 'data pembayaran klaim';
-      $claims = Claim::with('office:id,name')->where('status', 3)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get();
-    } else {
+      if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+        $claims = Claim::with('office:id,name')->where('status', 3)->orderBy('code')->get();
+      else
+        $claims = Claim::with('office:id,name')->where('status', 3)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get();
+    }else if (strtolower($request->status) == 'history') {
+      $url     = route('claims', ['status' => 'history']);
+      $menu   = 'selesai';
+      $title   = 'data riwayat klaim';
+      if (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6)
+        $claims = Claim::with('office:id,name')->where('status', 4)->orderBy('code')->get();
+      else
+        $claims = Claim::with('office:id,name')->where('status', 4)->where('outlet_id',session('user_data')['outlet_id'])->orderBy('code')->get(); 
+    }else {
       return redirect()->route('claims', ['status' => 'submission']);
     }
     $data   = [
@@ -391,40 +402,40 @@ class ClaimController extends Controller
         //     ]);
         //   }
         // }
-
-        // Update Recommendation
-        Recommendation::where('uuid', $recom_uuid)->update([
-          'description'    => $recom_note                 ?? null,
-          'created_by'    => $this->get_data_user()->id ?? null,
-          'suggestion'    => ($next) ? 1 : 0,
-          'position_id'   => $this->get_data_user()->position_id,//Session('user_data')['position_id'],
-          'created_at'    => date('Y-m-d H:i'),
-        ]);
-
-         $recommendation = Recommendation::where('claim_id', $claim->id)
-                    ->where('sequence', $claim->sequence)
-                    ->first();
-
-        // Simpan history
-        RecommendationHistory::create([
-            'uuid'              =>  Str::uuid()->toString(),
-            'recommendation_id' => $recommendation->id,
-            'claim_id'          => $claim->id,
-            'user_id'           => session('user_data')['id'],
-            'note'              => $request->recom_note,
-        ]);
         
-        $this->add_log("Menambahkan rekomendasi baru untuk klaim [$claim->code]");
-        
-        // Update Claim
-        Claim::where('uuid', $uuid)->update([
-          'reviewed_at'    => date('Y-m-d H:i'),
-          'reviewed_by'    => $this->get_data_user()->id ?? null,
-          'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
-          'status'        => ($last) ? $claim->status + 1 :  $claim->status,
-        ]);
-        
-        if ($claim->status==2){          
+        if ($claim->status==1){
+          // Update Recommendation
+          Recommendation::where('uuid', $recom_uuid)->update([
+            'description'    => $recom_note                 ?? null,
+            'created_by'    => $this->get_data_user()->id ?? null,
+            'suggestion'    => ($next) ? 1 : 0,
+            'position_id'   => $this->get_data_user()->position_id,//Session('user_data')['position_id'],
+            'created_at'    => date('Y-m-d H:i'),
+          ]);
+
+          $recommendation = Recommendation::where('claim_id', $claim->id)
+                      ->where('sequence', $claim->sequence)
+                      ->first();
+
+          // Simpan history
+          RecommendationHistory::create([
+              'uuid'              =>  Str::uuid()->toString(),
+              'recommendation_id' => $recommendation->id,
+              'claim_id'          => $claim->id,
+              'user_id'           => session('user_data')['id'],
+              'note'              => $request->recom_note,
+          ]);
+          
+          $this->add_log("Menambahkan rekomendasi baru untuk klaim [$claim->code]");    
+          // Update Claim
+          Claim::where('uuid', $uuid)->update([
+            'reviewed_at'    => date('Y-m-d H:i'),
+            'reviewed_by'    => $this->get_data_user()->id ?? null,
+            'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
+            'status'        => ($last) ? $claim->status + 1 :  $claim->status,
+          ]);                
+        }
+        else if ($claim->status==2){          
           try {
             $url = 'https://uatassist.askridasyariah.com:2811/aas/ClaimSubMission';
             //$url = 'https://assist.askridasyariah.co.id:2810/aas/ClaimPolicyPegadaian';
@@ -475,6 +486,70 @@ class ClaimController extends Controller
             die;
             return ['error' => true, 'message' => $e->getMessage()];
           }
+          // Update Recommendation
+          Recommendation::where('uuid', $recom_uuid)->update([
+            'description'    => $recom_note                 ?? null,
+            'created_by'    => $this->get_data_user()->id ?? null,
+            'suggestion'    => ($next) ? 1 : 0,
+            'position_id'   => $this->get_data_user()->position_id,//Session('user_data')['position_id'],
+            'created_at'    => date('Y-m-d H:i'),
+          ]);
+
+          $recommendation = Recommendation::where('claim_id', $claim->id)
+                      ->where('sequence', $claim->sequence)
+                      ->first();
+
+          // Simpan history
+          RecommendationHistory::create([
+              'uuid'              =>  Str::uuid()->toString(),
+              'recommendation_id' => $recommendation->id,
+              'claim_id'          => $claim->id,
+              'user_id'           => session('user_data')['id'],
+              'note'              => $request->recom_note,
+          ]);
+          
+          $this->add_log("Menambahkan rekomendasi baru untuk klaim [$claim->code]");
+          // Update Claim
+          Claim::where('uuid', $uuid)->update([
+            'approved_at'    => date('Y-m-d H:i'),
+            'approved_by'    => $this->get_data_user()->id ?? null,
+            'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
+            'status'        => ($last) ? $claim->status + 1 :  $claim->status,
+          ]);
+                    
+        }
+        else if($claim->status==3){
+          if ($request->hasFile('payment_file')) 
+            {
+              $file = $request->file('payment_file');
+              $filename = uniqid() . '_' . $file->getClientOriginalName();
+              $path = $file->storeAs('uploads', $filename, 'public');
+
+              // Simpan file bukti pembayaran ke tabel documents
+              $document                 = new Document();
+              $document->uuid           = Str::uuid()->toString();
+              $document->document       = $filename;
+              $document->description    = $request->payment_description ?? '-';
+              $document->remarks        = null;
+              $document->claim_id       = $claim->id;
+              $document->nameothers     = 'Bukti Pembayaran atas Klaim No ' . $claim->Code;
+              $document->cause_file_id  = null;
+              $document->created_at     = null;
+              $document->updated_at     = null;
+              $document->is_accepted    = 1;
+              $document->save();
+
+              // Update data pembayaran ke tabel claims
+              Claim::where('uuid', $uuid)->update([
+                'payment_number' => $request->payment_number,
+                  'payment_receiver' => $request->payment_receiver,
+                  'payment_description' => $request->payment_description,                  
+                  'paid_at'       => now(),
+                  'paid_by'    => $this->get_data_user()->id ?? null,
+                  'sequence'      => ($next) ? $claim->sequence + 1 : $claim->sequence,
+                  'status'        => ($last) ? $claim->status + 1 :  $claim->status,
+              ]);              
+            }
         }
         
         // Update Documents

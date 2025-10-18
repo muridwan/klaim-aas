@@ -508,7 +508,60 @@
                 </div>
                 @endif
                 @endforeach
-                {{-- END of RECOMENDATIONs --}}
+              {{-- END of RECOMENDATIONs --}}
+              @if ( (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6) && ($claim->status==3) )    
+                {{-- PAYMENTs --}}
+                <hr class="my-4">
+                <div class="row mb-2 mt-2">
+                  <div class="col-xl-6 col-lg-8">
+                    <h4 class="font-weight-bold">
+                      <i class="far fa-folder-open"></i> <u>PEMBAYARAN KLAIM</u>
+                    </h4>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label for="payment_number" class="font-weight-bold">Nomor Pembayaran</label>
+                      <input type="text" name="payment_number" id="payment_number" class="form-control"
+                        placeholder="Masukkan nomor pembayaran"
+                        value="{{ old('payment_number', $claim->payment_number ?? '') }}">
+                    </div>
+
+                    <div class="form-group">
+                      <label for="payment_receiver" class="font-weight-bold">Atas Nama Penerima Pembayaran</label>
+                      <input type="text" name="payment_receiver" id="payment_receiver" class="form-control"
+                        placeholder="Masukkan nama penerima"
+                        value="{{ old('payment_receiver', $claim->payment_receiver ?? '') }}">
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label for="payment_description" class="font-weight-bold">Keterangan Pembayaran</label>
+                      <textarea name="payment_description" id="payment_description" rows="4"
+                        class="form-control"
+                        placeholder="Tambahkan keterangan pembayaran jika ada">{{ old('payment_description', $claim->payment_description ?? '') }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="payment_file" class="font-weight-bold">Upload Bukti Pembayaran</label>
+                      <input type="file" name="payment_file" id="payment_file" class="form-control-file border rounded p-2 bg-light">
+                      @if(isset($claim->payment_file))
+                        <div class="mt-2">
+                          <a target="_blank" href="{{ asset('storage/uploads/'.$claim->payment_file) }}" class="badge bg-gradient-info px-3 py-1">
+                            <i class="fa fa-search"></i> Lihat Bukti
+                          </a>
+                          <a href="{{ asset('storage/uploads/'.$claim->payment_file) }}" download class="badge bg-gradient-primary px-3 py-1">
+                            <i class="fa fa-download"></i> Unduh
+                          </a>
+                        </div>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+                {{-- END of PAYMENTs --}}
+              @endif  
             </div>
             @if ( session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 )
               <div class="card-footer text-right">
