@@ -519,6 +519,28 @@ class ClaimController extends Controller
                     
         }
         else if($claim->status==3){
+          try {
+            $request->validate([
+                'payment_number' => 'required|string|max:255',
+                'payment_receiver' => 'required|string|max:255',
+                'payment_description' => 'nullable|string',
+                'payment_file' => 'required|file|mimes:pdf,jpg,png|max:2048',
+            ], [
+                // Pesan custom
+                'payment_number.required' => 'Nomor pembayaran wajib diisi.',
+                'payment_receiver.required' => 'Nama penerima wajib diisi.',
+                'payment_file.required' => 'Bukti pembayaran wajib diupload.',
+                'payment_file.mimes' => 'Format file harus PDF, JPG, atau PNG.',
+            ]);
+          }catch (\Illuminate\Validation\ValidationException $e) {
+              // return response()->json([
+              //     'status' => 'error',
+              //     'errors' => $e->errors()
+              // ], 422);
+              return back()
+              ->withErrors($e->validator)
+              ->withInput();              
+          }
           if ($request->hasFile('payment_file')) 
             {
               $file = $request->file('payment_file');
@@ -532,7 +554,7 @@ class ClaimController extends Controller
               $document->description    = $request->payment_description ?? '-';
               $document->remarks        = null;
               $document->claim_id       = $claim->id;
-              $document->nameothers     = 'Bukti Pembayaran atas Klaim No ' . $claim->Code;
+              $document->nameothers     = 'Bukti Pembayaran atas Klaim No ' . $claim->claimno;
               $document->cause_file_id  = null;
               $document->created_at     = null;
               $document->updated_at     = null;

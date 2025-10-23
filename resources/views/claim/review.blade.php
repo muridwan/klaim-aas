@@ -191,7 +191,7 @@
                       <div class="timeline-content" title="">
                         <div class="inner-circle"></div>
                         @if ($claim->status == 4) {{-- Penijauan --}}
-                        <p class="h6 mt-3 mb-1 text-dark"> <i>In Progress</i></p>
+                        <p class="h6 mt-3 mb-1 text-dark"> <i>Finish</i></p>
                         <p class="h6 text-success font-weight-bold mb-0 mb-lg-0">Penyelesaian</p>
                         @elseif( $claim->status >= 5 ) {{-- Persetujian --}}
                         <p class="h6 mt-3 mb-1"> {{date('d-m-Y, H:i', strtotime($claim->settled_at)) . " WIB"}}</p>
@@ -334,9 +334,11 @@
                   <h4 class="font-weight-bold">
                     <i class="far fa-folder-open"></i> <u>DOKUMEN</u>
                   </h4>
-                  <button type="button" id="addDocument" class="btn btn-sm bg-gradient-primary rounded-pill px-3">
-                    <i class="fa fa-plus-circle"></i> Tambah Dokumen
-                  </button>
+                  @if (($claim->sequence == 1||$claim->sequence == 2) && (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 ))
+                    <button type="button" id="addDocument" class="btn btn-sm bg-gradient-primary rounded-pill px-3">
+                      <i class="fa fa-plus-circle"></i> Tambah Dokumen
+                    </button>
+                  @endif
                 </div>
               </div>
               <div class="table-responsive">
@@ -526,6 +528,9 @@
                       <input type="text" name="payment_number" id="payment_number" class="form-control"
                         placeholder="Masukkan nomor pembayaran"
                         value="{{ old('payment_number', $claim->payment_number ?? '') }}">
+                      @error('payment_number')
+                          <small class="text-danger">{{ $message }}</small>
+                      @enderror  
                     </div>
 
                     <div class="form-group">
@@ -533,6 +538,9 @@
                       <input type="text" name="payment_receiver" id="payment_receiver" class="form-control"
                         placeholder="Masukkan nama penerima"
                         value="{{ old('payment_receiver', $claim->payment_receiver ?? '') }}">
+                      @error('payment_receiver')
+                          <small class="text-danger">{{ $message }}</small>
+                      @enderror  
                     </div>
                   </div>
 
@@ -557,13 +565,16 @@
                           </a>
                         </div>
                       @endif
+                      @error('payment_file')
+                          <small class="text-danger">{{ $message }}</small>
+                      @enderror
                     </div>
                   </div>
                 </div>
                 {{-- END of PAYMENTs --}}
               @endif  
             </div>
-            @if ( session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 )
+            @if ( ($claim->status<=3) && (session('user_role')['role_id'] == 4 || session('user_role')['role_id'] == 5 || session('user_role')['role_id'] == 6 ))
               <div class="card-footer text-right">
                 <button type="submit" class="btn btn-sm bg-gradient-success px-3 rounded-pill">
                   <i class="fa fa-check"></i> SIMPAN
@@ -614,7 +625,6 @@
 @endsection
 
 @push('scripts')
-
 <script>
   $(document).ready(function () {
     $('.rupiah').each(function () { 
